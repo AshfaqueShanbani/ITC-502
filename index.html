@@ -1,133 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Group Registration Form</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
-    .error {
-      color: red;
-      font-size: 0.9em;
-    }
-    .highlight {
-      border: 2px solid orange; /* Highlight color */
-    }
-  </style>
-  <!-- Include Firebase libraries -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
-
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyD0KjZR8Kyqt3YNDSRXEE6zkGeaVbZWCd4",
-      authDomain: "itc-502.firebaseapp.com",
-      databaseURL: "https://itc-502-default-rtdb.firebaseio.com",
-      projectId: "itc-502",
-      storageBucket: "itc-502.firebasestorage.app",
-      messagingSenderId: "1094382366225",
-      appId: "1:1094382366225:web:72333fcfd39ae286a5cbb0",
-      measurementId: "G-PFRE03NZBB"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const database = getDatabase(app); // Initialize Realtime Database
-
-    document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("registrationForm").addEventListener("submit", async function(event) {
-        event.preventDefault();
-
-        const groupName = document.getElementById("groupName").value;
-        const members = [
-          { name: document.getElementById("member1Name").value, roll: document.getElementById("member1Roll").value },
-          { name: document.getElementById("member2Name").value, roll: document.getElementById("member2Roll").value },
-          { name: document.getElementById("member3Name").value, roll: document.getElementById("member3Roll").value }
-        ];
-
-        const responseMessage = document.getElementById("responseMessage");
-        responseMessage.textContent = "";
-
-        // Clear previous highlights
-        document.querySelectorAll('input').forEach(input => {
-          input.classList.remove('highlight');
-        });
-
-        try {
-          // Fetch existing groups and members
-          const dbRef = ref(database, 'groups/');
-          const snapshot = await get(dbRef);
-
-          const registeredMembers = new Set(); // To track already registered members
-          if (snapshot.exists()) {
-            snapshot.forEach(group => {
-              const groupData = group.val();
-              groupData.members.forEach(member => {
-                registeredMembers.add(member.roll);
-              });
-            });
-          }
-
-          // Validate new members against already registered ones
-          const alreadyRegistered = [];
-          members.forEach((member, index) => {
-            if (registeredMembers.has(member.roll)) {
-              alreadyRegistered.push(index);
-              document.getElementById(`member${index + 1}Roll`).classList.add('highlight');
-            }
-          });
-
-          if (alreadyRegistered.length > 0) {
-            responseMessage.textContent = "Some members are already registered in another group.";
-            responseMessage.style.color = "red";
-            return; // Stop submission if any member is already registered
-          }
-
-          // Add data to Realtime Database
-          const groupRef = ref(database, 'groups/' + Date.now()); // Use timestamp as a unique key
-          await set(groupRef, { groupName, members });
-          responseMessage.textContent = "Group registered successfully!";
-          responseMessage.style.color = "green";
-        } catch (error) {
-          responseMessage.textContent = "Failed to register the group: " + error.message;
-          responseMessage.style.color = "red";
-          console.error("Error:", error); // Log the error for debugging
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Registration Form</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
         }
-      });
-    });
-  </script>
+        .logo {
+            width: 50px;
+            height: 50px;
+        }
+        .highlight {
+            border: 2px solid orange; /* Highlight color */
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
+    <!-- Include Firebase libraries -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0KjZR8Kyqt3YNDSRXEE6zkGeaVbZWCd4",
+            authDomain: "itc-502.firebaseapp.com",
+            databaseURL: "https://itc-502-default-rtdb.firebaseio.com",
+            projectId: "itc-502",
+            storageBucket: "itc-502.firebasestorage.app",
+            messagingSenderId: "1094382366225",
+            appId: "1:1094382366225:web:72333fcfd39ae286a5cbb0",
+            measurementId: "G-PFRE03NZBB"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("registrationForm").addEventListener("submit", async function(event) {
+                event.preventDefault();
+
+                const groupName = document.getElementById("groupName").value;
+                const members = [
+                    { name: document.getElementById("member1Name").value, roll: document.getElementById("member1Roll").value },
+                    { name: document.getElementById("member2Name").value, roll: document.getElementById("member2Roll").value },
+                    { name: document.getElementById("member3Name").value, roll: document.getElementById("member3Roll").value }
+                ];
+
+                const responseMessage = document.getElementById("responseMessage");
+                responseMessage.textContent = "";
+
+                document.querySelectorAll('input').forEach(input => {
+                    input.classList.remove('highlight');
+                });
+
+                try {
+                    const dbRef = ref(database, 'groups/');
+                    const snapshot = await get(dbRef);
+
+                    const registeredMembers = new Set();
+                    if (snapshot.exists()) {
+                        snapshot.forEach(group => {
+                            const groupData = group.val();
+                            groupData.members.forEach(member => {
+                                registeredMembers.add(member.roll);
+                            });
+                        });
+                    }
+
+                    const alreadyRegistered = [];
+                    members.forEach((member, index) => {
+                        if (registeredMembers.has(member.roll)) {
+                            alreadyRegistered.push(index);
+                            document.getElementById(`member${index + 1}Roll`).classList.add('highlight');
+                        }
+                    });
+
+                    if (alreadyRegistered.length > 0) {
+                        responseMessage.textContent = "Some members are already registered in another group.";
+                        responseMessage.style.color = "red";
+                        return;
+                    }
+
+                    const groupRef = ref(database, 'groups/' + Date.now());
+                    await set(groupRef, { groupName, members });
+                    responseMessage.textContent = "Group registered successfully!";
+                    responseMessage.style.color = "green";
+                } catch (error) {
+                    responseMessage.textContent = "Failed to register the group: " + error.message;
+                    responseMessage.style.color = "red";
+                    console.error("Error:", error);
+                }
+            });
+        });
+    </script>
 </head>
 <body>
-  <h2>Group Registration Form</h2>
-  <form id="registrationForm">
-    <label>Group Name:</label>
-    <input type="text" id="groupName" required><br><br>
+    <div class="container">
+        <div class="text-center mb-4">
+            <img src="logo.png" alt="Logo" class="logo float-left">
+            <h2>Group Registration Form</h2>
+            <img src="logo.png" alt="Logo" class="logo float-right">
+        </div>
 
-    <label>Member 1 Name:</label>
-    <input type="text" id="member1Name" required><br>
-    <label>Member 1 Roll Number:</label>
-    <input type="text" id="member1Roll" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)"><br><br>
+        <form id="registrationForm" class="bg-light p-4 border rounded">
+            <div class="form-group">
+                <label for="groupName">Group Name:</label>
+                <input type="text" id="groupName" class="form-control" required>
+            </div>
 
-    <label>Member 2 Name:</label>
-    <input type="text" id="member2Name" required><br>
-    <label>Member 2 Roll Number:</label>
-    <input type="text" id="member2Roll" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)"><br><br>
+            <h5>Members</h5>
+            <div class="form-group">
+                <label for="member1Name">Member 1 Name:</label>
+                <input type="text" id="member1Name" class="form-control" required>
+                <label for="member1Roll">Member 1 Roll Number:</label>
+                <input type="text" id="member1Roll" class="form-control" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)">
+            </div>
+            <div class="form-group">
+                <label for="member2Name">Member 2 Name:</label>
+                <input type="text" id="member2Name" class="form-control" required>
+                <label for="member2Roll">Member 2 Roll Number:</label>
+                <input type="text" id="member2Roll" class="form-control" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)">
+            </div>
+            <div class="form-group">
+                <label for="member3Name">Member 3 Name:</label>
+                <input type="text" id="member3Name" class="form-control" required>
+                <label for="member3Roll">Member 3 Roll Number:</label>
+                <input type="text" id="member3Roll" class="form-control" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)">
+            </div>
 
-    <label>Member 3 Name:</label>
-    <input type="text" id="member3Name" required><br>
-    <label>Member 3 Roll Number:</label>
-    <input type="text" id="member3Roll" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)"><br><br>
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            <p id="responseMessage" class="error"></p>
+        </form>
+    </div>
 
-    <button type="submit">Submit</button>
-    <p id="responseMessage" class="error"></p>
-  </form>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
