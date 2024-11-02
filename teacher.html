@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Groups</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+    </style>
+    <!-- Include Firebase libraries -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0KjZR8Kyqt3YNDSRXEE6zkGeaVbZWCd4",
+            authDomain: "itc-502.firebaseapp.com",
+            databaseURL: "https://itc-502-default-rtdb.firebaseio.com",
+            projectId: "itc-502",
+            storageBucket: "itc-502.firebasestorage.app",
+            messagingSenderId: "1094382366225",
+            appId: "1:1094382366225:web:72333fcfd39ae286a5cbb0",
+            measurementId: "G-PFRE03NZBB"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const fetchGroups = () => {
+                const dbRef = ref(database, 'groups/');
+                onValue(dbRef, (snapshot) => {
+                    const tableBody = document.getElementById("groupsTableBody");
+                    tableBody.innerHTML = ""; // Clear existing table rows
+
+                    if (snapshot.exists()) {
+                        snapshot.forEach(groupSnapshot => {
+                            const groupData = groupSnapshot.val();
+                            const row = document.createElement("tr");
+
+                            row.innerHTML = `
+                                <td>${groupData.groupName}</td>
+                                <td>${groupData.members.map(member => member.name).join(', ')}</td>
+                                <td>${groupData.members.map(member => member.roll).join(', ')}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    } else {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td colspan="3" class="text-center">No registered groups found.</td>`;
+                        tableBody.appendChild(row);
+                    }
+                });
+            };
+
+            fetchGroups(); // Initial fetch of groups
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2>Registered Groups</h2>
+            <p>View the list of registered project groups and their members.</p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Project Title</th>
+                        <th>Members</th>
+                        <th>Roll Numbers</th>
+                    </tr>
+                </thead>
+                <tbody id="groupsTableBody">
+                    <!-- Group data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
