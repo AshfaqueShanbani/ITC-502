@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registered Groups</title>
+    <title>Registered Groups - Teacher View</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
@@ -14,6 +14,17 @@
         }
         .table-responsive {
             margin-top: 20px;
+        }
+        .mobile-table {
+            display: none; /* Hide by default */
+        }
+        @media (max-width: 768px) {
+            .desktop-table {
+                display: none; /* Hide desktop table on small screens */
+            }
+            .mobile-table {
+                display: block; /* Show mobile table on small screens */
+            }
         }
     </style>
     <!-- Include Firebase libraries -->
@@ -39,25 +50,49 @@
             const fetchGroups = () => {
                 const dbRef = ref(database, 'groups/');
                 onValue(dbRef, (snapshot) => {
-                    const tableBody = document.getElementById("groupsTableBody");
-                    tableBody.innerHTML = ""; // Clear existing table rows
+                    const desktopTableBody = document.getElementById("groupsTableBody");
+                    const mobileTableBody = document.getElementById("mobileGroupsTableBody");
+                    desktopTableBody.innerHTML = ""; // Clear existing table rows
+                    mobileTableBody.innerHTML = ""; // Clear existing mobile rows
 
                     if (snapshot.exists()) {
                         snapshot.forEach(groupSnapshot => {
                             const groupData = groupSnapshot.val();
                             const row = document.createElement("tr");
 
+                            // Desktop table row
                             row.innerHTML = `
                                 <td>${groupData.groupName}</td>
                                 <td>${groupData.members.map(member => member.name).join(', ')}</td>
                                 <td>${groupData.members.map(member => member.roll).join(', ')}</td>
                             `;
-                            tableBody.appendChild(row);
+                            desktopTableBody.appendChild(row);
+
+                            // Mobile table row
+                            const mobileRow = document.createElement("div");
+                            mobileRow.className = "card mb-2"; // Bootstrap card for mobile view
+                            mobileRow.innerHTML = `
+                                <div class="card-body">
+                                    <h5 class="card-title">${groupData.groupName}</h5>
+                                    <p class="card-text"><strong>Members:</strong> ${groupData.members.map(member => member.name).join(', ')}</p>
+                                    <p class="card-text"><strong>Roll Numbers:</strong> ${groupData.members.map(member => member.roll).join(', ')}</p>
+                                </div>
+                            `;
+                            mobileTableBody.appendChild(mobileRow);
                         });
                     } else {
                         const row = document.createElement("tr");
                         row.innerHTML = `<td colspan="3" class="text-center">No registered groups found.</td>`;
-                        tableBody.appendChild(row);
+                        desktopTableBody.appendChild(row);
+
+                        const mobileRow = document.createElement("div");
+                        mobileRow.className = "card mb-2";
+                        mobileRow.innerHTML = `
+                            <div class="card-body">
+                                <p class="text-center">No registered groups found.</p>
+                            </div>
+                        `;
+                        mobileTableBody.appendChild(mobileRow);
                     }
                 });
             };
@@ -73,7 +108,8 @@
             <p>View the list of registered project groups and their members.</p>
         </div>
 
-        <div class="table-responsive">
+        <!-- Desktop View Table -->
+        <div class="table-responsive desktop-table">
             <table class="table table-bordered">
                 <thead class="thead-light">
                     <tr>
@@ -86,6 +122,13 @@
                     <!-- Group data will be populated here -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile View Cards -->
+        <div class="mobile-table">
+            <div id="mobileGroupsTableBody">
+                <!-- Mobile group data will be populated here -->
+            </div>
         </div>
     </div>
 
