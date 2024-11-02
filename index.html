@@ -16,6 +16,60 @@
       font-size: 0.9em;
     }
   </style>
+  <!-- Include Firebase libraries -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0KjZR8Kyqt3YNDSRXEE6zkGeaVbZWCd4",
+      authDomain: "itc-502.firebaseapp.com",
+      databaseURL: "https://itc-502-default-rtdb.firebaseio.com",
+      projectId: "itc-502",
+      storageBucket: "itc-502.firebasestorage.app",
+      messagingSenderId: "1094382366225",
+      appId: "1:1094382366225:web:72333fcfd39ae286a5cbb0",
+      measurementId: "G-PFRE03NZBB"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app); // Initialize Realtime Database
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("registrationForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const data = {
+          groupName: document.getElementById("groupName").value,
+          members: [
+            { name: document.getElementById("member1Name").value, roll: document.getElementById("member1Roll").value },
+            { name: document.getElementById("member2Name").value, roll: document.getElementById("member2Roll").value },
+            { name: document.getElementById("member3Name").value, roll: document.getElementById("member3Roll").value }
+          ]
+        };
+
+        const responseMessage = document.getElementById("responseMessage");
+        responseMessage.textContent = "";
+
+        try {
+          // Add data to Realtime Database
+          const groupRef = ref(database, 'groups/' + Date.now()); // Use timestamp as a unique key
+          await set(groupRef, data);
+          responseMessage.textContent = "Group registered successfully!";
+          responseMessage.style.color = "green";
+        } catch (error) {
+          responseMessage.textContent = "Failed to register the group: " + error.message;
+          responseMessage.style.color = "red";
+          console.error("Error:", error); // Log the error for debugging
+        }
+      });
+    });
+  </script>
 </head>
 <body>
   <h2>Group Registration Form</h2>
@@ -41,46 +95,5 @@
     <button type="submit">Submit</button>
     <p id="responseMessage" class="error"></p>
   </form>
-
-  <script>
-    document.getElementById("registrationForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
-
-      const data = {
-        groupName: document.getElementById("groupName").value,
-        members: [
-          { name: document.getElementById("member1Name").value, roll: document.getElementById("member1Roll").value },
-          { name: document.getElementById("member2Name").value, roll: document.getElementById("member2Roll").value },
-          { name: document.getElementById("member3Name").value, roll: document.getElementById("member3Roll").value }
-        ]
-      };
-
-      const responseMessage = document.getElementById("responseMessage");
-      responseMessage.textContent = "";
-
-      try {
-        const response = await fetch("https://script.google.com/macros/s/1poNeTK-vFGjF55D-n6GZ2kMcj0W0mV0qiY4etY_ggHanNX7xSxw_KZTT/exec", { // Replace with your script ID
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          }
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          responseMessage.textContent = "Group registered successfully!";
-          responseMessage.style.color = "green";
-        } else {
-          responseMessage.textContent = result.message || "Failed to register the group.";
-          responseMessage.style.color = "red";
-        }
-      } catch (error) {
-        responseMessage.textContent = "Error submitting form. Please try again.";
-        console.error("Error:", error);
-      }
-    });
-  </script>
 </body>
 </html>
