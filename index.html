@@ -91,6 +91,17 @@
                         return;
                     }
 
+                    // Validate roll number formats
+                    const invalidRolls = members.filter(member => !/^2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)$/.test(member.roll));
+                    if (invalidRolls.length > 0) {
+                        invalidRolls.forEach((member, index) => {
+                            document.getElementById(`member${index + 1}Roll`).classList.add('highlight');
+                        });
+                        responseMessage.textContent = "Some roll numbers are in an invalid format.";
+                        responseMessage.style.color = "red";
+                        return;
+                    }
+
                     const groupRef = ref(database, 'groups/' + Date.now());
                     await set(groupRef, { groupName, members });
                     responseMessage.textContent = "Group registered successfully!";
@@ -108,7 +119,7 @@
     <div class="container">
         <div class="text-center mb-4">
             <h2>ITC-502<br>
-Project Memembers Registration</h2>
+Project Members Registration</h2>
         </div>
 
         <form id="registrationForm" class="bg-light p-4 border rounded">
@@ -134,7 +145,7 @@ Project Memembers Registration</h2>
                 <label for="member3Name">Member 3 Name:</label>
                 <input type="text" id="member3Name" class="form-control" required>
                 <label for="member3Roll">Member 3 Roll Number:</label>
-                <input type="text" id="member3Roll" class="form-control"placeholder="2K21-IT-" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)">
+                <input type="text" id="member3Roll" class="form-control" placeholder="2K21-IT-" required pattern="2K21-IT-(0[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-2][0-9]|220)">
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">Submit</button>
