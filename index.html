@@ -15,12 +15,14 @@
       color: red;
       font-size: 0.9em;
     }
+    .highlight {
+      border: 2px solid orange; /* Highlight color */
+    }
   </style>
   <!-- Include Firebase libraries -->
   <script type="module">
-    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
 
     // Your web app's Firebase configuration
@@ -44,22 +46,54 @@
       document.getElementById("registrationForm").addEventListener("submit", async function(event) {
         event.preventDefault();
 
-        const data = {
-          groupName: document.getElementById("groupName").value,
-          members: [
-            { name: document.getElementById("member1Name").value, roll: document.getElementById("member1Roll").value },
-            { name: document.getElementById("member2Name").value, roll: document.getElementById("member2Roll").value },
-            { name: document.getElementById("member3Name").value, roll: document.getElementById("member3Roll").value }
-          ]
-        };
+        const groupName = document.getElementById("groupName").value;
+        const members = [
+          { name: document.getElementById("member1Name").value, roll: document.getElementById("member1Roll").value },
+          { name: document.getElementById("member2Name").value, roll: document.getElementById("member2Roll").value },
+          { name: document.getElementById("member3Name").value, roll: document.getElementById("member3Roll").value }
+        ];
 
         const responseMessage = document.getElementById("responseMessage");
         responseMessage.textContent = "";
 
+        // Clear previous highlights
+        document.querySelectorAll('input').forEach(input => {
+          input.classList.remove('highlight');
+        });
+
         try {
+          // Fetch existing groups and members
+          const dbRef = ref(database, 'groups/');
+          const snapshot = await get(dbRef);
+
+          const registeredMembers = new Set(); // To track already registered members
+          if (snapshot.exists()) {
+            snapshot.forEach(group => {
+              const groupData = group.val();
+              groupData.members.forEach(member => {
+                registeredMembers.add(member.roll);
+              });
+            });
+          }
+
+          // Validate new members against already registered ones
+          const alreadyRegistered = [];
+          members.forEach((member, index) => {
+            if (registeredMembers.has(member.roll)) {
+              alreadyRegistered.push(index);
+              document.getElementById(`member${index + 1}Roll`).classList.add('highlight');
+            }
+          });
+
+          if (alreadyRegistered.length > 0) {
+            responseMessage.textContent = "Some members are already registered in another group.";
+            responseMessage.style.color = "red";
+            return; // Stop submission if any member is already registered
+          }
+
           // Add data to Realtime Database
           const groupRef = ref(database, 'groups/' + Date.now()); // Use timestamp as a unique key
-          await set(groupRef, data);
+          await set(groupRef, { groupName, members });
           responseMessage.textContent = "Group registered successfully!";
           responseMessage.style.color = "green";
         } catch (error) {
