@@ -59,7 +59,7 @@
       responseMessage.textContent = "";
 
       try {
-        const response = await fetch("https://script.google.com/macros/s/1poNeTK-vFGjF55D-n6GZ2kMcj0W0mV0qiY4etY_ggHanNX7xSxw_KZTT/exec", {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbz112JnSWr2hnSOjnblQGPbbhg9RyJdjQ_7d49ZuDl0T_7385s-fn6NUDb2kZX5aF0y/exec", { // Replace with your script URL
           method: "POST",
           body: JSON.stringify(data),
           headers: {
@@ -68,7 +68,7 @@
         });
 
         const result = await response.json();
-        if (result.success) {
+        if (response.ok) { // Check if the response is OK
           responseMessage.textContent = "Group registered successfully!";
           responseMessage.style.color = "green";
         } else {
@@ -76,6 +76,7 @@
           responseMessage.style.color = "red";
         }
       } catch (error) {
+        console.error("Error:", error); // Log error for debugging
         responseMessage.textContent = "Error submitting form. Please try again.";
       }
     });
